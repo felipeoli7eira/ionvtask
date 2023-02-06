@@ -1,56 +1,114 @@
 <template>
   <ion-page>
-    <ion-header :translucent="true">
-      <ion-toolbar>
-        <ion-title>Blank</ion-title>
-      </ion-toolbar>
-    </ion-header>
-
     <ion-content :fullscreen="true">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Blank</ion-title>
-        </ion-toolbar>
-      </ion-header>
 
-      <div id="container">
-        <strong>Ready to create an app?</strong>
-        <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+      <div class="tabs-box">
+        <div @click="setSelectedMenu()" class="tab" :class="{ 'selected': tabSelected === 'list' }">
+          <img src="./../assets/svg/icon-list.svg" alt="Icone de lista">
+        </div>
+        <div @click="setSelectedMenu('done')" class="tab" :class="{ 'selected': tabSelected === 'done' }">
+          <img src="./../assets/svg/icon-check.svg" alt="Icone check">
+        </div>
       </div>
+
+      <ion-fab v-if="tabSelected === 'list'" slot="fixed" vertical="bottom" horizontal="end">
+        <ion-fab-button @click="addNewTask()">
+          <img src="./../assets/svg/icon-add.svg" alt="Icone add">
+        </ion-fab-button>
+      </ion-fab>
+
     </ion-content>
   </ion-page>
 </template>
 
-<script setup lang="ts">
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/vue';
+<script lang="ts">
+
+import { IonContent, IonPage, IonFab, IonFabButton, modalController } from '@ionic/vue';
+import { defineComponent } from 'vue';
+
+import CreateTask from './../modals/CreateTask.vue';
+
+export default defineComponent({
+  name: 'HomePage',
+  components: {
+    IonContent,
+    IonPage,
+    IonFab,
+    IonFabButton
+  },
+
+  data() {
+    return {
+      tabSelected: 'list'
+    }
+  },
+
+  methods: {
+    setSelectedMenu(tabName = 'list') {
+      this.tabSelected = tabName;
+    },
+
+    async addNewTask() {
+      const modal = await modalController.create({
+        component: CreateTask,
+        mode: 'ios',
+        breakpoints: [0, 0.25, 0.5],
+        initialBreakpoint: 0.5
+      });
+
+      modal.present();
+
+      // eslint-disable-next-line
+      const modalResponse = await modal.onDidDismiss();
+    }
+  }
+});
+
 </script>
 
 <style scoped>
-#container {
-  text-align: center;
-  
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+
+ion-content {
+  --background: #E0E2DB;
 }
 
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
+.tabs-box,
+.tab {
+  height: 70px;
+  width: 100%;
 }
 
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-  
-  color: #8c8c8c;
-  
-  margin: 0;
+.tabs-box {
+  height: 70px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
 }
 
-#container a {
-  text-decoration: none;
+.tab {
+  display: grid;
+  place-items: center;
+  background: #CECECE;
 }
+
+.tab.selected {
+  background: #E0E2DB;
+}
+
+.tab img {
+  width: 30px;
+}
+
+ion-fab {
+  bottom: 2rem;
+  right: 2rem;
+}
+
+ion-fab-button {
+  --background: #DFA92C;
+  --background-activated: #e4ad2e;
+  --background-hover: #e4ad2e;
+  width: 55px;
+  height: 55px;
+}
+
 </style>
