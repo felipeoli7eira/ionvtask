@@ -15,7 +15,8 @@
         <div v-if="tabSelected === 'list'" class="tab tab-tasks-list" :class="{ 'selected': tabSelected === 'list' }">
           <ul class="tasks">
             <li v-for="task of tasks" :key="task.id">
-              {{ task.title }}
+              <p class="ion-no-margin" @click="seeDescription(task.id)">{{ task.title }}</p>
+              <span class="btn-done-task"></span>
             </li>
           </ul>
         </div>
@@ -37,11 +38,11 @@
 
 <script lang="ts">
 
+import TaskDescriptionVue from '@/modals/TaskDescription.vue';
 import { IonContent, IonPage, IonFab, IonFabButton, modalController } from '@ionic/vue';
 import { defineComponent } from 'vue';
-
 import CreateTask from './../modals/CreateTask.vue';
-import { Storage } from './../services/storage';
+import Storage from './../services/storage';
 
 export default defineComponent({
   name: 'HomePage',
@@ -60,7 +61,7 @@ export default defineComponent({
   },
 
   async ionViewWillEnter() {
-    this.tasks = Storage.read('tasks');
+    this.tasks = Storage.read('tasks', []);
   },
 
   methods: {
@@ -68,11 +69,27 @@ export default defineComponent({
       this.tabSelected = tabName;
     },
 
-    getAllTasks() {
-      return Storage.read('tasks');
+    getTasks() {
+      return Storage.read('tasks', []);
     },
 
-    async addNewTask() {
+    async seeDescription(taskID: number) {
+      const task: any = this.tasks.find((task: any) => task.id === taskID);
+
+      const modal = await modalController.create({
+        component: TaskDescriptionVue,
+        mode: 'ios',
+        breakpoints: [0, 0.25, 0.40, 1],
+        initialBreakpoint: 0.25,
+        componentProps: { task }
+      });
+
+      modal.present();
+
+      modal.onDidDismiss();
+    },
+
+    async openModalFormNewTask() {
       const modal = await modalController.create({
         component: CreateTask,
         mode: 'ios',
@@ -82,24 +99,27 @@ export default defineComponent({
 
       modal.present();
 
+      return modal.onDidDismiss();
+    },
+
+    async addNewTask() {
+
       // eslint-disable-next-line
-      const modalResponse = await modal.onDidDismiss();
+      const modalResponse = await this.openModalFormNewTask();
 
       if (modalResponse.role === 'filled') {
-        let allTasks: any[] = this.getAllTasks();
-        if (allTasks === null || allTasks.length === 0) {
-          allTasks = [];
-        }
+        const tasks: any[] = this.getTasks();
 
-        allTasks.push({
+        tasks.push({
+          id: new Date().getTime(),
           title: modalResponse.data.task.title,
           optionalDescription: modalResponse.data.task.optionalDescription,
           currentState: modalResponse.data.task.currentState
         });
 
-        Storage.define('tasks', allTasks);
+        Storage.define('tasks', tasks);
 
-        this.tasks = this.getAllTasks();
+        this.tasks = this.getTasks();
       }
 
     }
@@ -178,6 +198,28 @@ ul.tasks li {
   text-align: center;
   font-weight: 500;
   box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+ul.tasks li p {
+  width: 100%;
+}
+
+.btn-done-task {
+  width: 25px;
+  height: 25px;
+  border-radius: 25px;
+  border: 1px solid #ABABAB;
+  background-color: #D9D9D9;
+}
+
+.btn-done-task:active {
+  background-color: #44CF6C;
+  border-color: #3FC064;
 }
 
 </style>

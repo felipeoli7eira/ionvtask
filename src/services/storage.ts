@@ -1,4 +1,4 @@
-export class Storage
+export default class Storage
 {
     private static storagePrefix = 'ionvtasks';
 
@@ -13,16 +13,25 @@ export class Storage
         return true;
     }
 
-    public static read(key: string)
+    public static read(key: string, returnIfStorageNotFound: any = undefined)
     {
-        const data = localStorage.getItem(`${Storage.storagePrefix}.${key}`) ?? '[]';
+        const data = localStorage.getItem(`${Storage.storagePrefix}.${key}`);
+
+        if (data === null) {
+            return returnIfStorageNotFound;
+        }
 
         try
         {
-            return JSON.parse(data);
+            if (typeof data === 'string') {
+                return JSON.parse(data);
+            }
+
+            return data;
         }
         catch(error)
         {
+            console.log("🚀 ~ storage: read(...) ~ catch(error): ", error);
             return data;
         }
     }

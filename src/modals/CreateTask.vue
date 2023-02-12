@@ -26,7 +26,6 @@ export default defineComponent({
     data() {
         return {
             task: {
-                id: 0,
                 title: '',
                 optionalDescription: '',
                 currentState: 'do'
@@ -37,7 +36,6 @@ export default defineComponent({
     methods: {
 
         async saveTask() {
-            this.task.id = new Date().getTime();
             await modalController.dismiss({ task: this.task }, 'filled');
         },
 
